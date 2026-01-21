@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Beautifier - Code Formatter Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3f37c9;
+            --accent: #4cc9f0;
+            --light: #f8f9fa;
+            --light-gray: #e9ecef;
+            --gray: #adb5bd;
+            --dark: #212529;
+            --success: #4ade80;
+            --warning: #fbbf24;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --shadow-light: 0 5px 15px rgba(0, 0, 0, 0.05);
+            --glow: 0 0 20px rgba(67, 97, 238, 0.2);
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .logo-icon {
+            font-size: 2.8rem;
+            color: var(--primary);
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 4px 8px rgba(67, 97, 238, 0.3));
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--gray);
+            max-width: 600px;
+            margin: 0 auto 25px;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-light), var(--glow);
+            transform: translateY(-5px);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            color: var(--primary);
+        }
+
+        .card-title i {
+            font-size: 1.6rem;
+        }
+
+        .code-type-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .type-option {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .type-option input[type="radio"] {
+            display: none;
+        }
+
+        .type-option label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 15px;
+            background-color: var(--light);
+            border-radius: var(--border-radius);
+            border: 2px solid var(--light-gray);
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .type-option label:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-3px);
+        }
+
+        .type-option input[type="radio"]:checked + label {
+            background-color: rgba(67, 97, 238, 0.08);
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.1);
+        }
+
+        .type-option i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .code-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 992px) {
+            .code-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .code-input, .code-output {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .code-label {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 1.2rem;
+        }
+
+        .code-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: var(--transition);
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .btn-icon:hover {
+            color: var(--primary);
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 20px;
+            border: 2px solid var(--light-gray);
+            border-radius: var(--border-radius);
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            transition: var(--transition);
+            background-color: #fcfcfc;
+            color: var(--dark);
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        #output {
+            background-color: #f8f9fa;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(-1px);
+        }
+
+        .progress-container {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: var(--light-gray);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, var(--accent), var(--primary-light));
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 40px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            background-color: white;
+            box-shadow: var(--shadow-light);
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .light-effect {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(67, 97, 238, 0.1) 0%, rgba(67, 97, 238, 0) 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .light-effect-1 {
+            top: 10%;
+            right: 10%;
+        }
+
+        .light-effect-2 {
+            bottom: 10%;
+            left: 10%;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--success);
+            color: white;
+            padding: 15px 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: transform 0.4s ease, opacity 0.4s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="light-effect light-effect-1"></div>
+    <div class="light-effect light-effect-2"></div>
+    
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <i class="fas fa-code logo-icon"></i>
+                <h1>HTML Beautifier</h1>
+            </div>
+            <p class="subtitle">Format and beautify your HTML, CSS, and JavaScript code with our modern tool. Make your code cleaner and more readable in seconds.</p>
+        </header>
+        
+        <div class="card">
+            <div class="card-title">
+                <i class="fas fa-cogs"></i>
+                <h2>Code Type Selection</h2>
+            </div>
+            
+            <div class="code-type-selector">
+                <div class="type-option">
+                    <input type="radio" id="type-html" name="code-type" value="HTML" checked>
+                    <label for="type-html">
+                        <i class="fab fa-html5" style="color: #e34c26;"></i>
+                        <span>HTML</span>
+                    </label>
+                </div>
+                
+                <div class="type-option">
+                    <input type="radio" id="type-css" name="code-type" value="CSS">
+                    <label for="type-css">
+                        <i class="fab fa-css3-alt" style="color: #264de4;"></i>
+                        <span>CSS</span>
+                    </label>
+                </div>
+                
+                <div class="type-option">
+                    <input type="radio" id="type-cstyle" name="code-type" value="cstyle">
+                    <label for="type-cstyle">
+                        <i class="fas fa-code" style="color: #f0db4f;"></i>
+                        <span>JavaScript</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="code-container">
+            <div class="code-input">
+                <div class="code-header">
+                    <div class="code-label">
+                        <i class="fas fa-pencil-alt"></i> Input Code
+                    </div>
+                    <div class="code-actions">
+                        <button class="btn-icon" id="clear-input" title="Clear input">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                        <button class="btn-icon" id="sample-code" title="Load sample code">
+                            <i class="fas fa-file-code"></i>
+                        </button>
+                    </div>
+                </div>
+                <textarea id="input" placeholder="Paste your unformatted code here..."></textarea>
+            </div>
+            
+            <div class="code-output">
+                <div class="code-header">
+                    <div class="code-label">
+                        <i class="fas fa-eye"></i> Formatted Output
+                    </div>
+                    <div class="code-actions">
+                        <button class="btn-icon" id="copy-output" title="Copy to clipboard">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button class="btn-icon" id="download-output" title="Download code">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                <textarea id="output" placeholder="Your beautified code will appear here..." readonly></textarea>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button class="btn-primary" id="format-btn">
+                <i class="fas fa-magic"></i> Format Code
+            </button>
+        </div>
+        
+        <div class="progress-container" id="progress-container">
+            <div class="progress-label">
+                <span>Formatting Progress</span>
+                <span id="progress-percent">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="lines-count">0</div>
+                <div class="stat-label">Lines of Code</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="chars-count">0</div>
+                <div class="stat-label">Characters</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="time-saved">0</div>
+                <div class="stat-label">Seconds Saved</div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>HTML Beautifier Tool &copy; 2023 | Made with <i class="fas fa-heart" style="color: #e63946;"></i> for developers</p>
+        </footer>
+    </div>
+    
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notification-text">Code formatted successfully!</span>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM elements
+            const inputEl = document.getElementById('input');
+            const outputEl = document.getElementById('output');
+            const formatBtn = document.getElementById('format-btn');
+            const clearInputBtn = document.getElementById('clear-input');
+            const sampleCodeBtn = document.getElementById('sample-code');
+            const copyOutputBtn = document.getElementById('copy-output');
+            const downloadOutputBtn = document.getElementById('download-output');
+            const codeTypeRadios = document.querySelectorAll('input[name="code-type"]');
+            const progressContainer = document.getElementById('progress-container');
+            const progressFill = document.getElementById('progress-fill');
+            const progressPercent = document.getElementById('progress-percent');
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notification-text');
+            
+            // Stats elements
+            const linesCountEl = document.getElementById('lines-count');
+            const charsCountEl = document.getElementById('chars-count');
+            const timeSavedEl = document.getElementById('time-saved');
+            
+            // Sample codes for each type
+            const sampleCodes = {
+                'HTML': ,
+                
+                'CSS': `body{font-family:Arial,sans-serif;margin:0;padding:20px;background:#f0f0f0;}
+.container{width:100%;max-width:1200px;margin:0 auto;}
+.header{background:#333;color:white;padding:20px;border-radius:5px;}
+.button{background:#007bff;color:white;padding:10px 20px;border:none;border-radius:4px;cursor:pointer;}
+.button:hover{background:#0056b3;}`
+                ,
+                
+                'cstyle': `function calculateSum(a,b){return a+b;}
+const multiply=(x,y)=>x*y;
+class Calculator{
+constructor(){this.result=0;}
+add(num){this.result+=num;return this;}
+subtract(num){this.result-=num;return this;}
+getResult(){return this.result;}
+}`
+            };
+            
+            // Update stats based on input
+            function updateStats() {
+                const text = inputEl.value;
+                const lines = text.split('\n').length;
+                const chars = text.length;
+                
+                linesCountEl.textContent = lines;
+                charsCountEl.textContent = chars.toLocaleString();
+                
+                // Estimate time saved (roughly 2 seconds per 10 lines)
+                const timeSaved = Math.round(lines / 5);
+                timeSavedEl.textContent = timeSaved;
+            }
+            
+            // Show notification
+            function showNotification(message, isSuccess = true) {
+                notificationText.textContent = message;
+                notification.style.backgroundColor = isSuccess ? '#4ade80' : '#f87171';
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+            
+            // Format code based on selected type
+            function formatCode() {
+                const codeType = document.querySelector('input[name="code-type"]:checked').value;
+                let inputCode = inputEl.value.trim();
+                
+                if (!inputCode) {
+                    showNotification('Please enter some code to format.', false);
+                    return;
+                }
+                
+                // Show progress bar
+                progressContainer.style.display = 'block';
+                progressFill.style.width = '0%';
+                progressPercent.textContent = '0%';
+                
+                // Simulate formatting process with progress
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += 10;
+                    progressFill.style.width = `${progress}%`;
+                    progressPercent.textContent = `${progress}%`;
+                    
+                    if (progress >= 100) {
+                        clearInterval(progressInterval);
+                        
+                        // Perform actual formatting based on code type
+                        let formattedCode = '';
+                        
+                        if (codeType === 'HTML') {
+                            formattedCode = formatHTML(inputCode);
+                        } else if (codeType === 'CSS') {
+                            formattedCode = formatCSS(inputCode);
+                        } else {
+                            formattedCode = formatJavaScript(inputCode);
+                        }
+                        
+                        outputEl.value = formattedCode;
+                        
+                        // Update stats for output
+                        const lines = formattedCode.split('\n').length;
+                        const chars = formattedCode.length;
+                        linesCountEl.textContent = lines;
+                        charsCountEl.textContent = chars.toLocaleString();
+                        
+                        showNotification(`${codeType} code formatted successfully!`);
+                        
+                        // Hide progress bar after a moment
+                        setTimeout(() => {
+                            progressContainer.style.display = 'none';
+                        }, 1000);
+                    }
+                }, 50);
+            }
+            
+            // Simple HTML formatter
+            function formatHTML(code) {
+                let formatted = '';
+                let indent = 0;
+                const lines = code.split('\n');
+                
+                for (let line of lines) {
+                    line = line.trim();
+                    if (!line) continue;
+                    
+                    // Decrease indent for closing tags
+                    if (line.includes('</')) {
+                        indent = Math.max(0, indent - 1);
+                    }
+                    
+                    // Add indentation
+                    formatted += '  '.repeat(indent) + line + '\n';
+                    
+                    // Increase indent for opening tags (that are not self-closing)
+                    if (line.includes('<') && !line.includes('/>') && 
+                        !line.includes('<!') && !line.includes('</') && 
+                        line.includes('>')) {
+                        indent++;
+                    }
+                }
+                
+                return formatted;
+            }
+            
+            // Simple CSS formatter
+            function formatCSS(code) {
+                let formatted = '';
+                let indent = 0;
+                let insideRule = false;
+                
+                // Add spaces for readability
+                code = code.replace(/{/g, ' {\n');
+                code = code.replace(/}/g, '\n}\n');
+                code = code.replace(/;/g, ';\n');
+                code = code.replace(/,/g, ', ');
+                
+                const lines = code.split('\n');
+                
+                for (let line of lines) {
+                    line = line.trim();
+                    if (!line) continue;
+                    
+                    // Decrease indent for closing brace
+                    if (line.includes('}')) {
+                        indent = Math.max(0, indent - 1);
+                        insideRule = false;
+                    }
+                    
+                    // Add indentation
+                    formatted += '  '.repeat(indent) + line + '\n';
+                    
+                    // Increase indent after opening brace
+                    if (line.includes('{')) {
+                        indent++;
+                        insideRule = true;
+                    } else if (insideRule && line.includes(':')) {
+                        // Add extra indentation for CSS properties
+                        formatted = formatted.replace(/\n$/, '');
+                        formatted += '  '.repeat(1) + line.trim() + '\n';
+                        continue;
+                    }
+                }
+                
+                return formatted;
+            }
+            
+            // Simple JavaScript formatter
+            function formatJavaScript(code) {
+                let formatted = '';
+                let indent = 0;
+                
+                // Add spaces for readability
+                code = code.replace(/{/g, ' {\n');
+                code = code.replace(/}/g, '\n}\n');
+                code = code.replace(/;/g, ';\n');
+                code = code.replace(/,/g, ', ');
+                
+                const lines = code.split('\n');
+                
+                for (let line of lines) {
+                    line = line.trim();
+                    if (!line) continue;
+                    
+                    // Decrease indent for closing brace
+                    if (line.includes('}')) {
+                        indent = Math.max(0, indent - 1);
+                    }
+                    
+                    // Add indentation
+                    formatted += '  '.repeat(indent) + line + '\n';
+                    
+                    // Increase indent after opening brace
+                    if (line.includes('{')) {
+                        indent++;
+                    }
+                }
+                
+                return formatted;
+            }
+            
+            // Copy output to clipboard
+            function copyToClipboard() {
+                if (!outputEl.value) {
+                    showNotification('No formatted code to copy.', false);
+                    return;
+                }
+                
+                outputEl.select();
+                outputEl.setSelectionRange(0, 99999); // For mobile devices
+                
+                try {
+                    navigator.clipboard.writeText(outputEl.value);
+                    showNotification('Code copied to clipboard!');
+                } catch (err) {
+                    // Fallback for older browsers
+                    document.execCommand('copy');
+                    showNotification('Code copied to clipboard!');
+                }
+            }
+            
+            // Download output as file
+            function downloadOutput() {
+                if (!outputEl.value) {
+                    showNotification('No formatted code to download.', false);
+                    return;
+                }
+                
+                const codeType = document.querySelector('input[name="code-type"]:checked').value;
+                let extension = '.txt';
+                
+                if (codeType === 'HTML') extension = '.html';
+                else if (codeType === 'CSS') extension = '.css';
+                else extension = '.js';
+                
+                const blob = new Blob([outputEl.value], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `formatted-code${extension}`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showNotification('Code downloaded successfully!');
+            }
+            
+            // Event listeners
+            formatBtn.addEventListener('click', formatCode);
+            
+            clearInputBtn.addEventListener('click', function() {
+                inputEl.value = '';
+                outputEl.value = '';
+                updateStats();
+                showNotification('Input cleared.');
+            });
+            
+            sampleCodeBtn.addEventListener('click', function() {
+                const codeType = document.querySelector('input[name="code-type"]:checked').value;
+                inputEl.value = sampleCodes[codeType];
+                updateStats();
+                showNotification(`Sample ${codeType} code loaded.`);
+            });
+            
+            copyOutputBtn.addEventListener('click', copyToClipboard);
+            
+            downloadOutputBtn.addEventListener('click', downloadOutput);
+            
+            inputEl.addEventListener('input', updateStats);
+            
+            // Initialize with sample HTML code
+            inputEl.value = sampleCodes['HTML'];
+            updateStats();
+            
+            // Add hover effect to cards
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+            
+            // Add animation to light effects
+            const lightEffects = document.querySelectorAll('.light-effect');
+            lightEffects.forEach((light, index) => {
+                light.animate([
+                    { transform: 'scale(1)', opacity: 0.7 },
+                    { transform: 'scale(1.2)', opacity: 0.4 },
+                    { transform: 'scale(1)', opacity: 0.7 }
+                ], {
+                    duration: 8000 + index * 2000,
+                    iterations: Infinity,
+                    direction: 'alternate'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
